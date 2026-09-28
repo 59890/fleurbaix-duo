@@ -8,202 +8,224 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
+        .toast-enter { transform: translateY(0); opacity: 1; transition: all 0.3s ease-out; }
+        .toast-exit { transform: translateY(-20px); opacity: 0; transition: all 0.3s ease-in; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen p-4 sm:p-8">
+<body class="bg-slate-50 text-slate-800 min-h-screen p-3 sm:p-8">
+
+    <!-- Notification Toast Popup -->
+    <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none hidden px-4 py-2.5 rounded-xl shadow-2xl text-sm font-semibold flex items-center gap-2 border"></div>
 
     <div class="max-w-6xl mx-auto">
-        <header class="bg-gradient-to-r from-indigo-900 via-purple-900 to-rose-700 text-white p-6 sm:p-8 rounded-2xl shadow-xl mb-8">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <header class="bg-gradient-to-br from-indigo-950 via-purple-900 to-rose-700 text-white p-5 sm:p-8 rounded-3xl shadow-xl mb-6">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                 <div>
-                    <span class="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-md">Objectif Commun : 7 Mars 2027</span>
-                    <h1 class="text-2xl sm:text-4xl font-bold mt-2">Trail de 16 km de Fleurbaix - Duo 🏃‍♂️🏃‍♀️</h1>
-                    <p class="text-indigo-100 mt-1 text-sm sm:text-base">Séances communes synchronisées (Lui : Reprise & Anti-Périostite / Elle : Débutante 5km en 33min)</p>
+                    <div class="inline-flex items-center gap-2 bg-white/15 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-md border border-white/10">
+                        <span>🎯 Objectif Commun : 7 Mars 2027</span>
+                    </div>
+                    <h1 class="text-2xl sm:text-4xl font-extrabold mt-2 tracking-tight">Trail de 16 km de Fleurbaix</h1>
+                    <p class="text-indigo-100 text-xs sm:text-sm mt-1 max-w-xl">
+                        Programme Duo synchronisé • <b>Lui</b> : Reprise progressive & Anti-Périostite • <b>Elle</b> : Débutante (Base 5 km en 33 min)
+                    </p>
                 </div>
-                <div class="flex flex-col sm:flex-row gap-4 items-center">
-                    <!-- Sync & Profile Bar -->
-                    <div class="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/20 flex flex-col gap-2 min-w-[200px]">
-                        <div class="flex justify-between items-center text-xs">
-                            <span id="sync-status" class="text-indigo-200">Mode : Local / Prêt</span>
-                            <button onclick="saveToCloud()" class="bg-white text-indigo-900 hover:bg-indigo-50 font-bold px-3 py-1 rounded-lg text-xs shadow transition-all">💾 Enregistrer</button>
-                        </div>
-                        <div class="flex items-center gap-2 text-xs">
-                            <span class="text-indigo-200">Profil :</span>
-                            <select id="profile-select" onchange="switchProfile()" class="bg-indigo-950/60 text-white border border-white/20 rounded-lg px-2 py-1 text-xs outline-none">
-                                <option value="duo">Duo (Partagé)</option>
-                                <option value="lui">Lui (👤)</option>
-                                <option value="elle">Elle (👩)</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <!-- Progress Lui -->
-                    <div class="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/20 text-center min-w-[130px]">
-                        <div class="text-[10px] text-indigo-200 uppercase tracking-wider font-semibold">Progression Lui</div>
-                        <div id="progress-text-lui" class="text-xl font-bold">0 / 46</div>
-                        <div class="w-full bg-indigo-950/40 h-1.5 rounded-full mt-1 overflow-hidden">
-                            <div id="progress-bar-lui" class="bg-indigo-400 h-full transition-all duration-500" style="width: 0%"></div>
-                        </div>
+                <!-- Sync Action Buttons -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
+                    <button onclick="shareProgress()" class="bg-white text-indigo-950 hover:bg-indigo-50 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all">
+                        <span>📲 Envoyer à ma femme / mon homme</span>
+                    </button>
+                    <button onclick="shareViaWhatsApp()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all">
+                        <span>💬 WhatsApp</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6 pt-5 border-t border-white/15">
+                <!-- Progression Lui -->
+                <div class="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 flex flex-col justify-between">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-indigo-200 font-semibold uppercase tracking-wider text-[11px]">👤 Progression Lui</span>
+                        <span id="percent-lui" class="font-bold text-white text-xs">0%</span>
                     </div>
-                    <!-- Progress Elle -->
-                    <div class="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/20 text-center min-w-[130px]">
-                        <div class="text-[10px] text-rose-200 uppercase tracking-wider font-semibold">Progression Elle</div>
-                        <div id="progress-text-elle" class="text-xl font-bold">0 / 46</div>
-                        <div class="w-full bg-rose-950/40 h-1.5 rounded-full mt-1 overflow-hidden">
-                            <div id="progress-bar-elle" class="bg-rose-400 h-full transition-all duration-500" style="width: 0%"></div>
-                        </div>
+                    <div id="progress-text-lui" class="text-xl sm:text-2xl font-black text-white mt-1">0 / 46</div>
+                    <div class="w-full bg-indigo-950/50 h-2 rounded-full mt-2 overflow-hidden">
+                        <div id="progress-bar-lui" class="bg-indigo-400 h-full transition-all duration-500 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Progression Elle -->
+                <div class="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 flex flex-col justify-between">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-rose-200 font-semibold uppercase tracking-wider text-[11px]">👩 Progression Elle</span>
+                        <span id="percent-elle" class="font-bold text-white text-xs">0%</span>
+                    </div>
+                    <div id="progress-text-elle" class="text-xl sm:text-2xl font-black text-white mt-1">0 / 46</div>
+                    <div class="w-full bg-rose-950/50 h-2 rounded-full mt-2 overflow-hidden">
+                        <div id="progress-bar-elle" class="bg-rose-400 h-full transition-all duration-500 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Progression Duo Globale -->
+                <div class="col-span-2 sm:col-span-1 bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 flex flex-col justify-between">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-amber-200 font-semibold uppercase tracking-wider text-[11px]">🔥 Total Duo</span>
+                        <span id="percent-total" class="font-bold text-amber-300 text-xs">0%</span>
+                    </div>
+                    <div id="progress-text-total" class="text-xl sm:text-2xl font-black text-white mt-1">0 / 92</div>
+                    <div class="w-full bg-slate-900/50 h-2 rounded-full mt-2 overflow-hidden">
+                        <div id="progress-bar-total" class="bg-gradient-to-r from-amber-400 to-rose-400 h-full transition-all duration-500 rounded-full" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
         </header>
 
-        <div class="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none">
-            <button onclick="filterPhase('all')" class="phase-btn px-4 py-2 rounded-xl text-sm font-medium bg-purple-900 text-white shadow-sm transition-all whitespace-nowrap">Toutes les phases</button>
-            <button onclick="filterPhase('1')" class="phase-btn px-4 py-2 rounded-xl text-sm font-medium bg-white text-slate-600 hover:bg-slate-100 shadow-sm transition-all whitespace-nowrap">Phase 1 : Adaptation & Reprise</button>
-            <button onclick="filterPhase('2')" class="phase-btn px-4 py-2 rounded-xl text-sm font-medium bg-white text-slate-600 hover:bg-slate-100 shadow-sm transition-all whitespace-nowrap">Phase 2 : Endurance & Volume</button>
-            <button onclick="filterPhase('3')" class="phase-btn px-4 py-2 rounded-xl text-sm font-medium bg-white text-slate-600 hover:bg-slate-100 shadow-sm transition-all whitespace-nowrap">Phase 3 : Fartlek & Variantes</button>
-            <button onclick="filterPhase('4')" class="phase-btn px-4 py-2 rounded-xl text-sm font-medium bg-white text-slate-600 hover:bg-slate-100 shadow-sm transition-all whitespace-nowrap">Phase 4 : Spécifique Trail</button>
-            <button onclick="filterPhase('5')" class="phase-btn px-4 py-2 rounded-xl text-sm font-medium bg-white text-slate-600 hover:bg-slate-100 shadow-sm transition-all whitespace-nowrap">Phase 5 : Affûtage & Course</button>
+        <div class="flex gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none">
+            <button onclick="filterPhase('all', this)" class="phase-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-purple-900 text-white shadow transition-all whitespace-nowrap">Toutes les phases (23 sem.)</button>
+            <button onclick="filterPhase('1', this)" class="phase-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-slate-600 hover:bg-slate-100 shadow-sm transition-all whitespace-nowrap">Phase 1 : Adaptation</button>
+            <button onclick="filterPhase('2', this)" class="phase-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-slate-600 hover:bg-slate-100 shadow-sm transition-all whitespace-nowrap">Phase 2 : Endurance</button>
+            <button onclick="filterPhase('3', this)" class="phase-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-slate-600 hover:bg-slate-100 shadow-sm transition-all whitespace-nowrap">Phase 3 : Fartlek</button>
+            <button onclick="filterPhase('4', this)" class="phase-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-slate-600 hover:bg-slate-100 shadow-sm transition-all whitespace-nowrap">Phase 4 : Spécifique Trail</button>
+            <button onclick="filterPhase('5', this)" class="phase-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-slate-600 hover:bg-slate-100 shadow-sm transition-all whitespace-nowrap">Phase 5 : Affûtage & Course</button>
         </div>
 
-        <div id="weeks-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Injecté dynamiquement par JS -->
+        <div id="weeks-container" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Dynamically populated by JS -->
         </div>
     </div>
 
     <script>
-        // Plan duo synchronisé sur 23 semaines (du 28 sept 2026 au 7 mars 2027)
         const planData = [
             {
-                phase: 1, title: "Phase 1 : Adaptation et régularité (Octobre)",
+                phase: 1, title: "Phase 1 : Adaptation et régularité (Octobre 2026)",
                 weeks: [
                     { 
-                        num: "S1", dates: "28 sept - 4 oct", note: "Prise de repères commune",
+                        num: "S1", dates: "28 sept - 4 oct", note: "Reprise très douce sur chemins",
                         lui: { s1: "25 min footing très lent (chemins)", s2: "35 min (4 min course / 1 min marche)" },
                         elle: { s1: "4 km en endurance douce", s2: "5 km continus (autour de 33-34 min)" }
                     },
                     { 
-                        num: "S2", dates: "5 oct - 11 oct", note: "Montée en douceur",
+                        num: "S2", dates: "5 oct - 11 oct", note: "Montée progressive sans douleur",
                         lui: { s1: "30 min course continue (souple)", s2: "40 min (5 min course / 1 min marche)" },
                         elle: { s1: "4,5 km en footing régulier", s2: "5,5 km sortie longue facile" }
                     },
                     { 
-                        num: "S3", dates: "12 oct - 18 oct", note: "Premiers repères continus",
+                        num: "S3", dates: "12 oct - 18 oct", note: "Validation des premières sensations",
                         lui: { s1: "35 min course continue", s2: "45 min de footing continu" },
                         elle: { s1: "5 km footing continu", s2: "6 km sortie longue souple" }
                     },
                     { 
-                        num: "S4", dates: "19 oct - 25 oct", note: "Semaine de relâche (-20%)",
+                        num: "S4", dates: "19 oct - 25 oct", note: "Semaine de relâche (-20% de volume)",
                         lui: { s1: "25 min footing très cool", s2: "35 min footing cool" },
                         elle: { s1: "4 km footing très cool", s2: "5 km footing cool" }
                     }
                 ]
             },
             {
-                phase: 2, title: "Phase 2 : Construction de l'endurance (Novembre)",
+                phase: 2, title: "Phase 2 : Construction de l'endurance (Novembre 2026)",
                 weeks: [
                     { 
-                        num: "S5", dates: "26 oct - 1 nov", note: "Premières accélérations",
+                        num: "S5", dates: "26 oct - 1 nov", note: "Micro-accélérations douces",
                         lui: { s1: "40 min footing + 3 acc. de 30s", s2: "50 min sortie longue (~7 km)" },
                         elle: { s1: "5 km + 3 accélérations de 30s", s2: "7 km sortie longue" }
                     },
                     { 
-                        num: "S6", dates: "2 nov - 8 nov", note: "Consolidation du groupe",
+                        num: "S6", dates: "2 nov - 8 nov", note: "Consolidation du rythme de croisière",
                         lui: { s1: "45 min footing en endurance", s2: "1h00 sortie longue (~8,5 km)" },
                         elle: { s1: "5,5 km en endurance", s2: "7,5 km sortie longue" }
                     },
                     { 
-                        num: "S7", dates: "9 nov - 15 nov", note: "Cap des 10 km en vue",
+                        num: "S7", dates: "9 nov - 15 nov", note: "Cap des 10 km en vue !",
                         lui: { s1: "45 min + 3 fois 2 min dynamique", s2: "1h10 sortie longue (~10 km)" },
                         elle: { s1: "5 km + 3 fois 1 min dynamique", s2: "8,5 km sortie longue" }
                     },
                     { 
-                        num: "S8", dates: "16 nov - 22 nov", note: "Semaine de récupération",
+                        num: "S8", dates: "16 nov - 22 nov", note: "Semaine de relâche & récupération",
                         lui: { s1: "30 min cool", s2: "45 min sortie longue facile" },
                         elle: { s1: "4 km footing facile", s2: "6 km sortie longue facile" }
                     }
                 ]
             },
             {
-                phase: 3, title: "Phase 3 : Consolidation et Fartlek (Nov - Déc)",
+                phase: 3, title: "Phase 3 : Consolidation et Fartlek (Nov - Déc 2026)",
                 weeks: [
                     { 
-                        num: "S9", dates: "23 nov - 29 nov", note: "Variations d'allure partagées",
+                        num: "S9", dates: "23 nov - 29 nov", note: "Variations d'allures en nature",
                         lui: { s1: "45 min incluant 5x (1 min rapide / 1 min lent)", s2: "1h15 sortie longue (~11 km)" },
                         elle: { s1: "5 km incluant 4x (1 min vite / 1 min marche)", s2: "9,5 km sortie longue" }
                     },
                     { 
-                        num: "S10", dates: "30 nov - 6 déc", note: "Solide volume en duo",
+                        num: "S10", dates: "30 nov - 6 déc", note: "Solide sortie longue en duo",
                         lui: { s1: "50 min en endurance", s2: "1h20 sortie longue (~12 km)" },
-                        elle: { s1: "6 km en endurance", s2: "10,5 km sortie longue (1er 10 km !)" }
+                        elle: { s1: "6 km en endurance", s2: "10,5 km sortie longue (Cap 10 km !)" }
                     },
                     { 
-                        num: "S11", dates: "7 déc - 13 déc", note: "Allure et résistance",
+                        num: "S11", dates: "7 déc - 13 déc", note: "Gestion de l'effort continu",
                         lui: { s1: "45 min incluant 4x (2 min vite / 1 min lent)", s2: "1h25 sortie longue (~12,5 km)" },
                         elle: { s1: "5,5 km incl. 3x (2 min cible / 1 min marche)", s2: "11 km sortie longue" }
                     },
                     { 
-                        num: "S12", dates: "14 déc - 20 déc", note: "Trêve / Allègement",
+                        num: "S12", dates: "14 déc - 20 déc", note: "Trêve & allègement avant fêtes",
                         lui: { s1: "35 min cool", s2: "50 min de sortie longue" },
                         elle: { s1: "4 km cool", s2: "7 km sortie longue" }
                     }
                 ]
             },
             {
-                phase: 4, title: "Phase 4 : Spécifique Trail & Pic (Déc - Janv)",
+                phase: 4, title: "Phase 4 : Spécifique Trail & Pic (Déc 2026 - Janv 2027)",
                 weeks: [
                     { 
-                        num: "S13", dates: "21 déc - 27 déc", note: "Gestion des fêtes",
+                        num: "S13", dates: "21 déc - 27 déc", note: "Période de fêtes : régularité",
                         lui: { s1: "50 min footing chemins", s2: "1h30 sortie longue (~13 km)" },
                         elle: { s1: "6 km footing (fêtes)", s2: "12 km sortie longue chemins" }
                     },
                     { 
-                        num: "S14", dates: "28 déc - 3 janv", note: "Pic de volume maximum",
+                        num: "S14", dates: "28 déc - 3 janv", note: "Pic de distance maximal",
                         lui: { s1: "50 min avec relances en faux-plats", s2: "1h35 sortie longue (~14 km)" },
                         elle: { s1: "6 km avec faux-plats", s2: "13 km sortie longue" }
                     },
                     { 
-                        num: "S15", dates: "4 janv - 10 janv", note: "Relâche indispensable",
+                        num: "S15", dates: "4 janv - 10 janv", note: "Relâche musculaire indispensable",
                         lui: { s1: "40 min cool", s2: "1h00 sortie longue facile" },
                         elle: { s1: "5 km cool", s2: "8 km sortie longue facile" }
                     },
                     { 
-                        num: "S16", dates: "11 janv - 17 janv", note: "Terrain typé trail",
+                        num: "S16", dates: "11 janv - 17 janv", note: "Reconnaissance terrain meuble / sentier",
                         lui: { s1: "50 min footing endurance", s2: "1h20 sortie longue (terrain trail)" },
-                        elle: { s1: "6 km footing endurance", s2: "11 km sur terrain meuble / sentier" }
+                        elle: { s1: "6 km footing endurance", s2: "11 km sur sentier / herbe" }
                     }
                 ]
             },
             {
-                phase: 5, title: "Phase 5 : Affûtage et Course (Janv - Mars)",
+                phase: 5, title: "Phase 5 : Affûtage et Course (Janv - Mars 2027)",
                 weeks: [
                     { 
-                        num: "S17", dates: "18 janv - 24 janv", note: "Descente progressive",
+                        num: "S17", dates: "18 janv - 24 janv", note: "Descente progressive du kilométrage",
                         lui: { s1: "45 min cool", s2: "1h10 sortie longue" },
                         elle: { s1: "5 km cool", s2: "10 km sortie longue" }
                     },
                     { 
-                        num: "S18", dates: "25 janv - 31 janv", note: "Allègement du corps",
+                        num: "S18", dates: "25 janv - 31 janv", note: "Gain de fraîcheur physique",
                         lui: { s1: "40 min cool", s2: "50 min sortie longue" },
                         elle: { s1: "5 km cool", s2: "8 km sortie longue" }
                     },
                     { 
-                        num: "S19", dates: "1 fév - 7 fév", note: "Fraîcheur musculaire",
+                        num: "S19", dates: "1 fév - 7 fév", note: "Lignes droites et tonicité",
                         lui: { s1: "30 min cool + 3 lignes droites", s2: "40 min footing très léger" },
                         elle: { s1: "4 km cool + lignes droites", s2: "6 km footing très léger" }
                     },
                     { 
-                        num: "S20", dates: "8 fév - 14 fév", note: "Transition & Sécurité",
-                        lui: { s1: "Semaine de transition / repos", s2: "Sortie libre 30 min cool" },
-                        elle: { s1: "Transition / repos", s2: "5 km footing cool" }
+                        num: "S20", dates: "8 fév - 14 fév", note: "Semaine de transition & sécurité",
+                        lui: { s1: "Semaine de repos / transition", s2: "Sortie libre 30 min cool" },
+                        elle: { s1: "Repos / transition", s2: "5 km footing cool" }
                     },
                     { 
-                        num: "S21", dates: "15 fév - 21 fév", note: "Stabilisation",
+                        num: "S21", dates: "15 fév - 21 fév", note: "Maintien des repères moteurs",
                         lui: { s1: "35 min cool", s2: "45 min de footing" },
                         elle: { s1: "5 km cool", s2: "7 km de footing" }
                     },
                     { 
-                        num: "S22", dates: "22 fév - 28 fév", note: "Affûtage J-7",
+                        num: "S22", dates: "22 fév - 28 fév", note: "Affûtage J-7 (garder du jus)",
                         lui: { s1: "30 min cool", s2: "35 min footing" },
                         elle: { s1: "4 km cool", s2: "5 km footing" }
                     },
@@ -216,66 +238,62 @@
             }
         ];
 
-        let currentProfile = localStorage.getItem('fleurbaix_current_profile') || 'duo';
-        document.getElementById('profile-select').value = currentProfile;
+        const STORAGE_KEY = 'fleurbaix_duo_progress_v2';
 
-        function getStorageKey() {
-            return `fleurbaix_completed_${currentProfile}`;
-        }
-
-        let completedData = JSON.parse(localStorage.getItem(getStorageKey()) || '{}');
-
-        function switchProfile() {
-            currentProfile = document.getElementById('profile-select').value;
-            localStorage.setItem('fleurbaix_current_profile', currentProfile);
-            completedData = JSON.parse(localStorage.getItem(getStorageKey()) || '{}');
-            const activeBtn = document.querySelector('.phase-btn.bg-purple-900');
-            const activePhase = activeBtn ? activeBtn.getAttribute('onclick').match(/'(.*)'/)[1] : 'all';
-            renderPlan(activePhase);
-            document.getElementById('sync-status').innerText = `Profil : ${currentProfile.toUpperCase()}`;
-        }
-
-        function saveToCloud() {
-            // Encode data to base64 string to allow copying or saving in URL hash / localStorage backup
-            const jsonStr = JSON.stringify(completedData);
-            localStorage.setItem(getStorageKey(), jsonStr);
-            
-            // Also put it in URL hash so opening on another device with the hash restores it instantly
-            const encoded = btoa(encodeURIComponent(jsonStr));
-            window.location.hash = encoded;
-
-            const status = document.getElementById('sync-status');
-            status.innerText = "💾 Enregistré !";
-            setTimeout(() => {
-                status.innerText = `Profil : ${currentProfile.toUpperCase()}`;
-            }, 2500);
-        }
-
-        // Check if URL hash has backup data on load
-        if (window.location.hash) {
+        function loadData() {
             try {
-                const decoded = decodeURIComponent(atob(window.location.hash.substring(1)));
-                completedData = JSON.parse(decoded);
-                localStorage.setItem(getStorageKey(), decoded);
+                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
             } catch (e) {
-                console.error("Could not parse URL backup", e);
+                return {};
             }
         }
 
+        let completedData = loadData();
+
+        function checkIncomingHashSync() {
+            if (window.location.hash) {
+                const hash = window.location.hash.substring(1);
+                let raw = '';
+                if (hash.startsWith('duo=')) {
+                    raw = hash.replace('duo=', '');
+                } else {
+                    raw = hash;
+                }
+
+                if (raw) {
+                    try {
+                        const decodedJson = decodeURIComponent(atob(raw));
+                        const parsed = JSON.parse(decodedJson);
+                        if (typeof parsed === 'object' && parsed !== null) {
+                            completedData = { ...completedData, ...parsed };
+                            localStorage.setItem(STORAGE_KEY, JSON.stringify(completedData));
+                            showToast("🎉 Progression synchronisée reçue avec succès !", "success");
+                            // Clean up hash in URL without refreshing
+                            if (window.history && window.history.replaceState) {
+                                window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                            }
+                        }
+                    } catch (err) {
+                        console.warn("Could not decode hash data:", err);
+                    }
+                }
+            }
+        }
+
+        let currentFilter = 'all';
+
         function renderPlan(filter = 'all') {
+            currentFilter = filter;
             const container = document.getElementById('weeks-container');
             container.innerHTML = '';
-
-            let checkedLui = 0;
-            let checkedElle = 0;
 
             planData.forEach(group => {
                 if (filter !== 'all' && group.phase.toString() !== filter) return;
 
-                const phaseDiv = document.createElement('div');
-                phaseDiv.className = 'col-span-1 md:col-span-2 bg-purple-900/10 text-purple-900 font-semibold px-4 py-2 rounded-xl border border-purple-200 mt-4 mb-2';
-                phaseDiv.innerText = group.title;
-                container.appendChild(phaseDiv);
+                const phaseHeader = document.createElement('div');
+                phaseHeader.className = 'col-span-1 md:col-span-2 bg-gradient-to-r from-purple-900/10 to-rose-900/10 text-purple-950 font-bold px-4 py-2.5 rounded-2xl border border-purple-200/60 mt-3 mb-1 text-sm flex items-center justify-between';
+                phaseHeader.innerHTML = `<span>${group.title}</span><span class="text-xs font-normal text-purple-700">4 séances / sem. en duo</span>`;
+                container.appendChild(phaseHeader);
 
                 group.weeks.forEach(week => {
                     const luiS1Key = `${week.num}_lui_s1`;
@@ -283,95 +301,200 @@
                     const elleS1Key = `${week.num}_elle_s1`;
                     const elleS2Key = `${week.num}_elle_s2`;
 
-                    if (completedData[luiS1Key]) checkedLui++;
-                    if (completedData[luiS2Key]) checkedLui++;
-                    if (completedData[elleS1Key]) checkedElle++;
-                    if (completedData[elleS2Key]) checkedElle++;
-
                     const card = document.createElement('div');
-                    card.className = 'bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow';
-                    
+                    card.className = 'bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition-all';
+
                     card.innerHTML = `
                         <div>
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="bg-purple-100 text-purple-800 font-bold px-3 py-1 rounded-lg text-sm">${week.num}</span>
-                                <span class="text-xs font-medium text-slate-400">${week.dates}</span>
+                            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                                <span class="bg-purple-100 text-purple-900 font-extrabold px-3 py-1 rounded-xl text-xs sm:text-sm tracking-wide">${week.num}</span>
+                                <span class="text-xs font-medium text-slate-500">${week.dates}</span>
                             </div>
 
-                            <div class="space-y-4 mt-3">
-                                <!-- Bloc LUI -->
-                                <div class="p-3 rounded-xl bg-indigo-50/60 border border-indigo-100">
-                                    <div class="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-2">👤 Lui (Reprise & Anti-Périostite)</div>
+                            <div class="space-y-3.5 mt-3.5">
+                                <!-- Bloc Lui -->
+                                <div class="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-100/80">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="text-[11px] font-extrabold text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                                            <span>👤 Lui</span>
+                                            <span class="text-[10px] font-normal text-indigo-600 bg-indigo-100/60 px-1.5 py-0.5 rounded-md">Anti-Périostite</span>
+                                        </div>
+                                    </div>
                                     <div class="space-y-2">
-                                        <label class="flex items-start gap-2 cursor-pointer">
-                                            <input type="checkbox" data-key="${luiS1Key}" ${completedData[luiS1Key] ? 'checked' : ''} onchange="toggleWorkout(this)" class="mt-0.5 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
-                                            <span class="text-xs text-slate-700"><b>S1 :</b> ${week.lui.s1}</span>
+                                        <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                                            <input type="checkbox" id="${luiS1Key}" data-key="${luiS1Key}" ${completedData[luiS1Key] ? 'checked' : ''} onchange="onCheckboxChange(this)" class="mt-0.5 w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer">
+                                            <span class="text-xs text-slate-700 leading-snug"><b>S1 :</b> ${week.lui.s1}</span>
                                         </label>
-                                        <label class="flex items-start gap-2 cursor-pointer">
-                                            <input type="checkbox" data-key="${luiS2Key}" ${completedData[luiS2Key] ? 'checked' : ''} onchange="toggleWorkout(this)" class="mt-0.5 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
-                                            <span class="text-xs text-slate-700"><b>S2 :</b> ${week.lui.s2}</span>
+                                        <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                                            <input type="checkbox" id="${luiS2Key}" data-key="${luiS2Key}" ${completedData[luiS2Key] ? 'checked' : ''} onchange="onCheckboxChange(this)" class="mt-0.5 w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer">
+                                            <span class="text-xs text-slate-700 leading-snug"><b>S2 :</b> ${week.lui.s2}</span>
                                         </label>
                                     </div>
                                 </div>
 
-                                <!-- Bloc ELLE -->
-                                <div class="p-3 rounded-xl bg-rose-50/60 border border-rose-100">
-                                    <div class="text-xs font-bold text-rose-900 uppercase tracking-wider mb-2">👩 Elle (Débutante 5km/33min)</div>
+                                <!-- Bloc Elle -->
+                                <div class="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-100/80">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="text-[11px] font-extrabold text-rose-900 uppercase tracking-wider flex items-center gap-1.5">
+                                            <span>👩 Elle</span>
+                                            <span class="text-[10px] font-normal text-rose-600 bg-rose-100/60 px-1.5 py-0.5 rounded-md">Débutante (5km/33m)</span>
+                                        </div>
+                                    </div>
                                     <div class="space-y-2">
-                                        <label class="flex items-start gap-2 cursor-pointer">
-                                            <input type="checkbox" data-key="${elleS1Key}" ${completedData[elleS1Key] ? 'checked' : ''} onchange="toggleWorkout(this)" class="mt-0.5 w-4 h-4 text-rose-600 rounded border-slate-300 focus:ring-rose-500">
-                                            <span class="text-xs text-slate-700"><b>S1 :</b> ${week.elle.s1}</span>
+                                        <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                                            <input type="checkbox" id="${elleS1Key}" data-key="${elleS1Key}" ${completedData[elleS1Key] ? 'checked' : ''} onchange="onCheckboxChange(this)" class="mt-0.5 w-4 h-4 rounded text-rose-600 border-slate-300 focus:ring-rose-500 cursor-pointer">
+                                            <span class="text-xs text-slate-700 leading-snug"><b>S1 :</b> ${week.elle.s1}</span>
                                         </label>
-                                        <label class="flex items-start gap-2 cursor-pointer">
-                                            <input type="checkbox" data-key="${elleS2Key}" ${completedData[elleS2Key] ? 'checked' : ''} onchange="toggleWorkout(this)" class="mt-0.5 w-4 h-4 text-rose-600 rounded border-slate-300 focus:ring-rose-500">
-                                            <span class="text-xs text-slate-700"><b>S2 :</b> ${week.elle.s2}</span>
+                                        <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                                            <input type="checkbox" id="${elleS2Key}" data-key="${elleS2Key}" ${completedData[elleS2Key] ? 'checked' : ''} onchange="onCheckboxChange(this)" class="mt-0.5 w-4 h-4 rounded text-rose-600 border-slate-300 focus:ring-rose-500 cursor-pointer">
+                                            <span class="text-xs text-slate-700 leading-snug"><b>S2 :</b> ${week.elle.s2}</span>
                                         </label>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
-                            <span class="text-slate-400 italic">${week.note}</span>
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+                            <span class="italic font-medium">💡 ${week.note}</span>
                         </div>
                     `;
                     container.appendChild(card);
                 });
             });
 
-            // Update progress bars (sur 46 séances totales par personne)
+            updateProgressBars();
+        }
+
+        function updateProgressBars() {
+            let checkedLui = 0;
+            let checkedElle = 0;
+
+            for (let i = 1; i <= 23; i++) {
+                if (completedData[`S${i}_lui_s1`]) checkedLui++;
+                if (completedData[`S${i}_lui_s2`]) checkedLui++;
+                if (completedData[`S${i}_elle_s1`]) checkedElle++;
+                if (completedData[`S${i}_elle_s2`]) checkedElle++;
+            }
+
             const totalPerPerson = 46;
             const percentLui = Math.round((checkedLui / totalPerPerson) * 100) || 0;
             const percentElle = Math.round((checkedElle / totalPerPerson) * 100) || 0;
+            const totalWorkouts = checkedLui + checkedElle;
+            const percentTotal = Math.round((totalWorkouts / 92) * 100) || 0;
 
             document.getElementById('progress-text-lui').innerText = `${checkedLui} / ${totalPerPerson}`;
             document.getElementById('progress-bar-lui').style.width = `${percentLui}%`;
+            document.getElementById('percent-lui').innerText = `${percentLui}%`;
 
             document.getElementById('progress-text-elle').innerText = `${checkedElle} / ${totalPerPerson}`;
             document.getElementById('progress-bar-elle').style.width = `${percentElle}%`;
+            document.getElementById('percent-elle').innerText = `${percentElle}%`;
+
+            document.getElementById('progress-text-total').innerText = `${totalWorkouts} / 92`;
+            document.getElementById('progress-bar-total').style.width = `${percentTotal}%`;
+            document.getElementById('percent-total').innerText = `${percentTotal}%`;
         }
 
-        function toggleWorkout(checkbox) {
+        function onCheckboxChange(checkbox) {
             const key = checkbox.getAttribute('data-key');
             completedData[key] = checkbox.checked;
-            localStorage.setItem(getStorageKey(), JSON.stringify(completedData));
-            
-            const activeBtn = document.querySelector('.phase-btn.bg-purple-900');
-            const activePhase = activeBtn ? activeBtn.getAttribute('onclick').match(/'(.*)'/)[1] : 'all';
-            renderPlan(activePhase);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(completedData));
+            updateProgressBars();
+            showToast("Séance sauvegardée !", "info", 1500);
         }
 
-        function filterPhase(phase) {
-            document.querySelectorAll('.phase-btn').forEach(btn => {
-                btn.classList.remove('bg-purple-900', 'text-white');
-                btn.classList.add('bg-white', 'text-slate-600');
+        function filterPhase(phase, btn) {
+            document.querySelectorAll('.phase-btn').forEach(b => {
+                b.classList.remove('bg-purple-900', 'text-white', 'shadow');
+                b.classList.add('bg-white', 'text-slate-600', 'shadow-sm');
             });
-            event.target.classList.remove('bg-white', 'text-slate-600');
-            event.target.classList.add('bg-purple-900', 'text-white');
+            if (btn) {
+                btn.classList.remove('bg-white', 'text-slate-600', 'shadow-sm');
+                btn.classList.add('bg-purple-900', 'text-white', 'shadow');
+            }
             renderPlan(phase);
         }
 
-        window.onload = () => renderPlan('all');
+        function generateShareUrl() {
+            const encoded = btoa(encodeURIComponent(JSON.stringify(completedData)));
+            const base = window.location.origin + window.location.pathname;
+            return `${base}#duo=${encoded}`;
+        }
+
+        function copyToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+            } catch (err) {
+                console.error('Fallback copy error', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        async function shareProgress() {
+            const url = generateShareUrl();
+            const shareData = {
+                title: 'Trail de Fleurbaix 2027 - Progression Duo',
+                text: 'Voici notre plan d\'entraînement à jour avec nos séances cochées ! Ouvre le lien pour te synchroniser :',
+                url: url
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                    showToast("Lien partagé avec succès !", "success");
+                    return;
+                } catch (e) {
+                    if (e.name !== 'AbortError') {
+                        copyToClipboard(url);
+                        showToast("🔗 Lien copié ! Envoie-le par SMS ou message.", "success");
+                    }
+                    return;
+                }
+            }
+
+            copyToClipboard(url);
+            showToast("🔗 Lien copié ! Envoie-le par SMS à ton partenaire.", "success");
+        }
+
+        function shareViaWhatsApp() {
+            const url = generateShareUrl();
+            const message = encodeURIComponent(`Coucou ! Voici notre progression pour le Trail de Fleurbaix avec nos séances cochées 🏃‍♂️🏃‍♀️ : \n${url}`);
+            window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
+        }
+
+        let toastTimeout;
+        function showToast(message, type = "info", duration = 2800) {
+            const toast = document.getElementById('toast');
+            clearTimeout(toastTimeout);
+
+            toast.classList.remove('hidden', 'bg-slate-900', 'bg-emerald-600', 'text-white', 'border-slate-800', 'border-emerald-700');
+            
+            if (type === "success") {
+                toast.classList.add('bg-emerald-600', 'text-white', 'border-emerald-700');
+            } else {
+                toast.classList.add('bg-slate-900', 'text-white', 'border-slate-800');
+            }
+
+            toast.innerHTML = message;
+            toast.style.display = 'flex';
+
+            toastTimeout = setTimeout(() => {
+                toast.style.display = 'none';
+            }, duration);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkIncomingHashSync();
+            renderPlan('all');
+        });
     </script>
 </body>
 </html>
