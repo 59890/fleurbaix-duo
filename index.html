@@ -204,6 +204,7 @@
             }
         ];
 
+        // Charger l'état sauvegardé depuis le stockage local du navigateur
         let completedData = JSON.parse(localStorage.getItem('fleurbaix_duo_completed') || '{}');
 
         function renderPlan(filter = 'all') {
@@ -285,8 +286,8 @@
                 });
             });
 
-            // Update progress bars
-            const totalPerPerson = totalWorkouts;
+            // Update progress bars (sur 46 séances totales par personne)
+            const totalPerPerson = 46;
             const percentLui = Math.round((checkedLui / totalPerPerson) * 100) || 0;
             const percentElle = Math.round((checkedElle / totalPerPerson) * 100) || 0;
 
@@ -300,7 +301,9 @@
         function toggleWorkout(checkbox) {
             const key = checkbox.getAttribute('data-key');
             completedData[key] = checkbox.checked;
+            // Sauvegarde automatique dans le navigateur
             localStorage.setItem('fleurbaix_duo_completed', JSON.stringify(completedData));
+            
             const activeBtn = document.querySelector('.phase-btn.bg-purple-900');
             const activePhase = activeBtn ? activeBtn.getAttribute('onclick').match(/'(.*)'/)[1] : 'all';
             renderPlan(activePhase);
