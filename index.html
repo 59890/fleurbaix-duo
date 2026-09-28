@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de Bord - Duo Trail de Fleurbaix (7 Mars 2027)</title>
-    <!-- Tailwind CSS pour un design moderne et responsive -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -14,15 +13,30 @@
 <body class="bg-slate-50 text-slate-800 min-h-screen p-4 sm:p-8">
 
     <div class="max-w-6xl mx-auto">
-        <!-- Header duo personnalisé -->
         <header class="bg-gradient-to-r from-indigo-900 via-purple-900 to-rose-700 text-white p-6 sm:p-8 rounded-2xl shadow-xl mb-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <span class="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-md">Objectif Commun : 7 Mars 2027</span>
                     <h1 class="text-2xl sm:text-4xl font-bold mt-2">Trail de 16 km de Fleurbaix - Duo 🏃‍♂️🏃‍♀️</h1>
-                    <p class="text-indigo-100 mt-1 text-sm sm:text-base">Séances communes synchronisées (Lui : Reprise / Elle : Débutante 5km en 33min)</p>
+                    <p class="text-indigo-100 mt-1 text-sm sm:text-base">Séances communes synchronisées (Lui : Reprise & Anti-Périostite / Elle : Débutante 5km en 33min)</p>
                 </div>
-                <div class="flex gap-4">
+                <div class="flex flex-col sm:flex-row gap-4 items-center">
+                    <!-- Sync & Profile Bar -->
+                    <div class="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/20 flex flex-col gap-2 min-w-[200px]">
+                        <div class="flex justify-between items-center text-xs">
+                            <span id="sync-status" class="text-indigo-200">Mode : Local / Prêt</span>
+                            <button onclick="saveToCloud()" class="bg-white text-indigo-900 hover:bg-indigo-50 font-bold px-3 py-1 rounded-lg text-xs shadow transition-all">💾 Enregistrer</button>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="text-indigo-200">Profil :</span>
+                            <select id="profile-select" onchange="switchProfile()" class="bg-indigo-950/60 text-white border border-white/20 rounded-lg px-2 py-1 text-xs outline-none">
+                                <option value="duo">Duo (Partagé)</option>
+                                <option value="lui">Lui (👤)</option>
+                                <option value="elle">Elle (👩)</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <!-- Progress Lui -->
                     <div class="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/20 text-center min-w-[130px]">
                         <div class="text-[10px] text-indigo-200 uppercase tracking-wider font-semibold">Progression Lui</div>
@@ -43,7 +57,6 @@
             </div>
         </header>
 
-        <!-- Filtres par phase -->
         <div class="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none">
             <button onclick="filterPhase('all')" class="phase-btn px-4 py-2 rounded-xl text-sm font-medium bg-purple-900 text-white shadow-sm transition-all whitespace-nowrap">Toutes les phases</button>
             <button onclick="filterPhase('1')" class="phase-btn px-4 py-2 rounded-xl text-sm font-medium bg-white text-slate-600 hover:bg-slate-100 shadow-sm transition-all whitespace-nowrap">Phase 1 : Adaptation & Reprise</button>
@@ -53,7 +66,6 @@
             <button onclick="filterPhase('5')" class="phase-btn px-4 py-2 rounded-xl text-sm font-medium bg-white text-slate-600 hover:bg-slate-100 shadow-sm transition-all whitespace-nowrap">Phase 5 : Affûtage & Course</button>
         </div>
 
-        <!-- Conteneur dynamique des semaines -->
         <div id="weeks-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Injecté dynamiquement par JS -->
         </div>
@@ -204,14 +216,56 @@
             }
         ];
 
-        // Charger l'état sauvegardé depuis le stockage local du navigateur
-        let completedData = JSON.parse(localStorage.getItem('fleurbaix_duo_completed') || '{}');
+        let currentProfile = localStorage.getItem('fleurbaix_current_profile') || 'duo';
+        document.getElementById('profile-select').value = currentProfile;
+
+        function getStorageKey() {
+            return `fleurbaix_completed_${currentProfile}`;
+        }
+
+        let completedData = JSON.parse(localStorage.getItem(getStorageKey()) || '{}');
+
+        function switchProfile() {
+            currentProfile = document.getElementById('profile-select').value;
+            localStorage.setItem('fleurbaix_current_profile', currentProfile);
+            completedData = JSON.parse(localStorage.getItem(getStorageKey()) || '{}');
+            const activeBtn = document.querySelector('.phase-btn.bg-purple-900');
+            const activePhase = activeBtn ? activeBtn.getAttribute('onclick').match(/'(.*)'/)[1] : 'all';
+            renderPlan(activePhase);
+            document.getElementById('sync-status').innerText = `Profil : ${currentProfile.toUpperCase()}`;
+        }
+
+        function saveToCloud() {
+            // Encode data to base64 string to allow copying or saving in URL hash / localStorage backup
+            const jsonStr = JSON.stringify(completedData);
+            localStorage.setItem(getStorageKey(), jsonStr);
+            
+            // Also put it in URL hash so opening on another device with the hash restores it instantly
+            const encoded = btoa(encodeURIComponent(jsonStr));
+            window.location.hash = encoded;
+
+            const status = document.getElementById('sync-status');
+            status.innerText = "💾 Enregistré !";
+            setTimeout(() => {
+                status.innerText = `Profil : ${currentProfile.toUpperCase()}`;
+            }, 2500);
+        }
+
+        // Check if URL hash has backup data on load
+        if (window.location.hash) {
+            try {
+                const decoded = decodeURIComponent(atob(window.location.hash.substring(1)));
+                completedData = JSON.parse(decoded);
+                localStorage.setItem(getStorageKey(), decoded);
+            } catch (e) {
+                console.error("Could not parse URL backup", e);
+            }
+        }
 
         function renderPlan(filter = 'all') {
             const container = document.getElementById('weeks-container');
             container.innerHTML = '';
 
-            let totalWorkouts = 0;
             let checkedLui = 0;
             let checkedElle = 0;
 
@@ -224,7 +278,6 @@
                 container.appendChild(phaseDiv);
 
                 group.weeks.forEach(week => {
-                    totalWorkouts += 2; // par personne
                     const luiS1Key = `${week.num}_lui_s1`;
                     const luiS2Key = `${week.num}_lui_s2`;
                     const elleS1Key = `${week.num}_elle_s1`;
@@ -301,8 +354,7 @@
         function toggleWorkout(checkbox) {
             const key = checkbox.getAttribute('data-key');
             completedData[key] = checkbox.checked;
-            // Sauvegarde automatique dans le navigateur
-            localStorage.setItem('fleurbaix_duo_completed', JSON.stringify(completedData));
+            localStorage.setItem(getStorageKey(), JSON.stringify(completedData));
             
             const activeBtn = document.querySelector('.phase-btn.bg-purple-900');
             const activePhase = activeBtn ? activeBtn.getAttribute('onclick').match(/'(.*)'/)[1] : 'all';
