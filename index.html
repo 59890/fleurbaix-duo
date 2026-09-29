@@ -77,7 +77,7 @@
       box-shadow: var(--shadow-sm);
     }
 
-    /* Live status indicator */
+    /* Status bar */
     .status-bar {
       display: flex;
       align-items: center;
@@ -228,7 +228,7 @@
     }
 
     .session:not(:last-child) {
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
 
     .session:hover {
@@ -246,7 +246,7 @@
       cursor: pointer;
       display: grid;
       place-content: center;
-      margin-top: 1px;
+      margin-top: 2px;
       flex-shrink: 0;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -264,12 +264,25 @@
     }
 
     .session-info { flex-grow: 1; }
-    .session-title { font-weight: 700; font-size: 0.9rem; color: #1e293b; }
-    .session-desc { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
+    
+    .session-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 2px;
+    }
+
+    .session-title { font-weight: 700; font-size: 0.88rem; color: #1e293b; }
+    .session-date { font-size: 0.75rem; font-weight: 600; color: #0284c7; background: #f0f9ff; padding: 2px 7px; border-radius: 6px; }
+    .session-desc { font-size: 0.82rem; color: var(--text-muted); }
 
     .session.done .session-title {
       text-decoration: line-through;
       color: #94a3b8;
+    }
+    .session.done .session-date {
+      color: #94a3b8;
+      background: #f1f5f9;
     }
     .session.done .session-desc {
       color: #cbd5e1;
@@ -328,48 +341,48 @@
 
   const plans = {
     her: [
-      { w: 1, tag: "Bases", s1: "4 km endurance douce", s2: "5 km en continu (33 min)" },
-      { w: 2, tag: "Bases", s1: "4,5 km régulier", s2: "5,5 km sortie longue facile" },
-      { w: 3, tag: "Bases", s1: "5 km footing souple", s2: "6 km sortie longue" },
-      { w: 4, tag: "Relâche", isRelache: true, s1: "4 km footing très cool", s2: "5 km footing facile" },
-      { w: 5, tag: "Volume", s1: "5 km + 3 accélérations 30s", s2: "7 km sortie longue" },
-      { w: 6, tag: "Volume", s1: "5,5 km endurance", s2: "7,5 km sortie longue" },
-      { w: 7, tag: "Volume", s1: "5 km + 3x 1 min dynamique", s2: "8,5 km sortie longue" },
-      { w: 8, tag: "Relâche", isRelache: true, s1: "4 km footing facile", s2: "6 km sortie longue" },
-      { w: 9, tag: "Fartlek", s1: "5 km dont 4x 1 min vite / 1 min marche", s2: "9,5 km sortie longue" },
-      { w: 10, tag: "Cap 10 km", s1: "6 km endurance", s2: "10,5 km sortie longue 🎯" },
-      { w: 11, tag: "Fartlek", s1: "5,5 km dont 3x 2 min allure cible", s2: "11 km sortie longue" },
-      { w: 12, tag: "Relâche", isRelache: true, s1: "4 km cool", s2: "7 km sortie facile" },
-      { w: 13, tag: "Trail", s1: "6 km footing nature", s2: "12 km chemins & sentiers" },
-      { w: 14, tag: "Pic max", s1: "6 km avec faux-plats", s2: "13 km sortie longue (Pic)" },
-      { w: 15, tag: "Relâche", isRelache: true, s1: "5 km cool", s2: "8 km sortie cool" },
-      { w: 16, tag: "Spécifique", s1: "6 km endurance active", s2: "11 km sur sentier vallonné" },
-      { w: 17, tag: "Affûtage", s1: "5 km footing souple", s2: "10 km sortie nature" },
-      { w: 18, tag: "Affûtage", s1: "5 km régulier", s2: "8 km allure facile" },
-      { w: 19, tag: "Affûtage", s1: "4 km cool + lignes droites", s2: "6 km très facile" },
-      { w: 20, tag: "Course !", isRace: true, s1: "Mercredi : 3 km activation", s2: "Dimanche : Trail de Fleurbaix (16 km) 🏁" }
+      { w: 1, tag: "Bases", d1: "Mar. 20 oct. 2026", s1: "4 km endurance douce", d2: "Dim. 25 oct. 2026", s2: "5 km en continu (33 min)" },
+      { w: 2, tag: "Bases", d1: "Mar. 27 oct. 2026", s1: "4,5 km régulier", d2: "Dim. 1 nov. 2026", s2: "5,5 km sortie longue facile" },
+      { w: 3, tag: "Bases", d1: "Mar. 3 nov. 2026", s1: "5 km footing souple", d2: "Dim. 8 nov. 2026", s2: "6 km sortie longue" },
+      { w: 4, tag: "Relâche", isRelache: true, d1: "Mar. 10 nov. 2026", s1: "4 km footing très cool", d2: "Dim. 15 nov. 2026", s2: "5 km footing facile" },
+      { w: 5, tag: "Volume", d1: "Mar. 17 nov. 2026", s1: "5 km + 3 accélérations 30s", d2: "Dim. 22 nov. 2026", s2: "7 km sortie longue" },
+      { w: 6, tag: "Volume", d1: "Mar. 24 nov. 2026", s1: "5,5 km endurance", d2: "Dim. 29 nov. 2026", s2: "7,5 km sortie longue" },
+      { w: 7, tag: "Volume", d1: "Mar. 1 déc. 2026", s1: "5 km + 3x 1 min dynamique", d2: "Dim. 6 déc. 2026", s2: "8,5 km sortie longue" },
+      { w: 8, tag: "Relâche", isRelache: true, d1: "Mar. 8 déc. 2026", s1: "4 km footing facile", d2: "Dim. 13 déc. 2026", s2: "6 km sortie longue" },
+      { w: 9, tag: "Fartlek", d1: "Mar. 15 déc. 2026", s1: "5 km dont 4x 1 min vite / 1 min marche", d2: "Dim. 20 déc. 2026", s2: "9,5 km sortie longue" },
+      { w: 10, tag: "Cap 10 km", d1: "Mar. 22 déc. 2026", s1: "6 km endurance", d2: "Dim. 27 déc. 2026", s2: "10,5 km sortie longue 🎯" },
+      { w: 11, tag: "Fartlek", d1: "Mar. 29 déc. 2026", s1: "5,5 km dont 3x 2 min allure cible", d2: "Dim. 3 janv. 2027", s2: "11 km sortie longue" },
+      { w: 12, tag: "Relâche", isRelache: true, d1: "Mar. 5 janv. 2027", s1: "4 km cool", d2: "Dim. 10 janv. 2027", s2: "7 km sortie facile" },
+      { w: 13, tag: "Trail", d1: "Mar. 12 janv. 2027", s1: "6 km footing nature", d2: "Dim. 17 janv. 2027", s2: "12 km chemins & sentiers" },
+      { w: 14, tag: "Pic max", d1: "Mar. 19 janv. 2027", s1: "6 km avec faux-plats", d2: "Dim. 24 janv. 2027", s2: "13 km sortie longue (Pic)" },
+      { w: 15, tag: "Relâche", isRelache: true, d1: "Mar. 26 janv. 2027", s1: "5 km cool", d2: "Dim. 31 janv. 2027", s2: "8 km sortie cool" },
+      { w: 16, tag: "Spécifique", d1: "Mar. 2 févr. 2027", s1: "6 km endurance active", d2: "Dim. 7 févr. 2027", s2: "11 km sentier vallonné" },
+      { w: 17, tag: "Affûtage", d1: "Mar. 9 févr. 2027", s1: "5 km footing souple", d2: "Dim. 14 févr. 2027", s2: "10 km sortie nature" },
+      { w: 18, tag: "Affûtage", d1: "Mar. 16 févr. 2027", s1: "5 km régulier", d2: "Dim. 21 févr. 2027", s2: "8 km allure facile" },
+      { w: 19, tag: "Affûtage", d1: "Mar. 23 févr. 2027", s1: "4 km cool + lignes droites", d2: "Dim. 28 févr. 2027", s2: "6 km très facile" },
+      { w: 20, tag: "Course !", isRace: true, d1: "Mer. 3 mars 2027", s1: "3 km réveil musculaire & lignes droites", d2: "Dim. 7 mars 2027", s2: "Trail de Fleurbaix (16 km) 🏁" }
     ],
     him: [
-      { w: 1, tag: "Sol souple", s1: "3,5 km herbe/terre + renfo mollets", s2: "4,5 km très facile" },
-      { w: 2, tag: "Progressivité", s1: "4,5 km terrain meuble", s2: "5,5 km footing régulier" },
-      { w: 3, tag: "Progressivité", s1: "5 km souple + étirements", s2: "6 km sortie souple" },
-      { w: 4, tag: "Relâche", isRelache: true, s1: "4 km footing très doux", s2: "5 km plat" },
-      { w: 5, tag: "Volume", s1: "5,5 km avec faux-plat montant", s2: "7 km terrain varié" },
-      { w: 6, tag: "Volume", s1: "6 km endurance souple", s2: "8 km sortie longue" },
-      { w: 7, tag: "Impacts", s1: "5,5 km + 4 lignes droites propres", s2: "9 km sortie progressive" },
-      { w: 8, tag: "Relâche", isRelache: true, s1: "4,5 km facile", s2: "6,5 km souple" },
-      { w: 9, tag: "Spécifique", s1: "6 km avec 4x 1 min trail tempo", s2: "10 km chemins" },
-      { w: 10, tag: "Volume", s1: "6,5 km régulier", s2: "11 km sortie longue" },
-      { w: 11, tag: "Spécifique", s1: "6 km avec 3x 2 min allure trail", s2: "12 km sortie longue" },
-      { w: 12, tag: "Relâche", isRelache: true, s1: "5 km très cool", s2: "7,5 km sans forcer" },
-      { w: 13, tag: "Sentiers", s1: "6,5 km allure spécifique", s2: "13 km chemins & relief" },
-      { w: 14, tag: "Pic max", s1: "7 km vallonné", s2: "14 km sortie longue (Pic)" },
-      { w: 15, tag: "Relâche", isRelache: true, s1: "5 km souple", s2: "8 km facile" },
-      { w: 16, tag: "Trail rythme", s1: "6,5 km avec relances propres", s2: "12 km terrain meuble" },
-      { w: 17, tag: "Affûtage", s1: "5,5 km endurance", s2: "10 km souple" },
-      { w: 18, tag: "Affûtage", s1: "5 km facile", s2: "8 km très souple" },
-      { w: 19, tag: "Affûtage", s1: "4 km + 3 déroulés souples", s2: "6 km régulier" },
-      { w: 20, tag: "Course !", isRace: true, s1: "Mercredi : 3 km réveil musculaire", s2: "Dimanche : Trail de Fleurbaix (16 km) 🏁" }
+      { w: 1, tag: "Sol souple", d1: "Mar. 20 oct. 2026", s1: "3,5 km herbe/terre + renfo mollets", d2: "Dim. 25 oct. 2026", s2: "4,5 km très facile" },
+      { w: 2, tag: "Progressivité", d1: "Mar. 27 oct. 2026", s1: "4,5 km terrain meuble", d2: "Dim. 1 nov. 2026", s2: "5,5 km footing régulier" },
+      { w: 3, tag: "Progressivité", d1: "Mar. 3 nov. 2026", s1: "5 km souple + étirements", d2: "Dim. 8 nov. 2026", s2: "6 km sortie souple" },
+      { w: 4, tag: "Relâche", isRelache: true, d1: "Mar. 10 nov. 2026", s1: "4 km footing très doux", d2: "Dim. 15 nov. 2026", s2: "5 km plat" },
+      { w: 5, tag: "Volume", d1: "Mar. 17 nov. 2026", s1: "5,5 km avec faux-plat montant", d2: "Dim. 22 nov. 2026", s2: "7 km terrain varié" },
+      { w: 6, tag: "Volume", d1: "Mar. 24 nov. 2026", s1: "6 km endurance souple", d2: "Dim. 29 nov. 2026", s2: "8 km sortie longue" },
+      { w: 7, tag: "Impacts", d1: "Mar. 1 déc. 2026", s1: "5,5 km + 4 lignes droites propres", d2: "Dim. 6 déc. 2026", s2: "9 km sortie progressive" },
+      { w: 8, tag: "Relâche", isRelache: true, d1: "Mar. 8 déc. 2026", s1: "4,5 km facile", d2: "Dim. 13 déc. 2026", s2: "6,5 km souple" },
+      { w: 9, tag: "Spécifique", d1: "Mar. 15 déc. 2026", s1: "6 km avec 4x 1 min trail tempo", d2: "Dim. 20 déc. 2026", s2: "10 km chemins" },
+      { w: 10, tag: "Volume", d1: "Mar. 22 déc. 2026", s1: "6,5 km régulier", d2: "Dim. 27 déc. 2026", s2: "11 km sortie longue" },
+      { w: 11, tag: "Spécifique", d1: "Mar. 29 déc. 2026", s1: "6 km avec 3x 2 min allure trail", d2: "Dim. 3 janv. 2027", s2: "12 km sortie longue" },
+      { w: 12, tag: "Relâche", isRelache: true, d1: "Mar. 5 janv. 2027", s1: "5 km très cool", d2: "Dim. 10 janv. 2027", s2: "7,5 km sans forcer" },
+      { w: 13, tag: "Sentiers", d1: "Mar. 12 janv. 2027", s1: "6,5 km allure spécifique", d2: "Dim. 17 janv. 2027", s2: "13 km chemins & relief" },
+      { w: 14, tag: "Pic max", d1: "Mar. 19 janv. 2027", s1: "7 km vallonné", d2: "Dim. 24 janv. 2027", s2: "14 km sortie longue (Pic)" },
+      { w: 15, tag: "Relâche", isRelache: true, d1: "Mar. 26 janv. 2027", s1: "5 km souple", d2: "Dim. 31 janv. 2027", s2: "8 km facile" },
+      { w: 16, tag: "Trail rythme", d1: "Mar. 2 févr. 2027", s1: "6,5 km avec relances propres", d2: "Dim. 7 févr. 2027", s2: "12 km terrain meuble" },
+      { w: 17, tag: "Affûtage", d1: "Mar. 9 févr. 2027", s1: "5,5 km endurance", d2: "Dim. 14 févr. 2027", s2: "10 km souple" },
+      { w: 18, tag: "Affûtage", d1: "Mar. 16 févr. 2027", s1: "5 km facile", d2: "Dim. 21 févr. 2027", s2: "8 km très souple" },
+      { w: 19, tag: "Affûtage", d1: "Mar. 23 févr. 2027", s1: "4 km + 3 déroulés souples", d2: "Dim. 28 févr. 2027", s2: "6 km régulier" },
+      { w: 20, tag: "Course !", isRace: true, d1: "Mer. 3 mars 2027", s1: "3 km réveil musculaire & lignes droites", d2: "Dim. 7 mars 2027", s2: "Trail de Fleurbaix (16 km) 🏁" }
     ]
   };
 
@@ -405,17 +418,25 @@
             <span class="week-num">Semaine ${item.w}</span>
             <span class="week-tag ${tagClass}">${item.tag}</span>
           </div>
+
           <div class="session ${done1 ? 'done' : ''}" onclick="toggleSession('${id1}')">
             <input type="checkbox" ${done1 ? 'checked' : ''} onclick="event.stopPropagation(); toggleSession('${id1}')">
             <div class="session-info">
-              <div class="session-title">Séance 1 (Mardi)</div>
+              <div class="session-top">
+                <span class="session-title">Séance 1</span>
+                <span class="session-date">${item.d1}</span>
+              </div>
               <div class="session-desc">${item.s1}</div>
             </div>
           </div>
+
           <div class="session ${done2 ? 'done' : ''}" onclick="toggleSession('${id2}')">
             <input type="checkbox" ${done2 ? 'checked' : ''} onclick="event.stopPropagation(); toggleSession('${id2}')">
             <div class="session-info">
-              <div class="session-title">Séance 2 (Week-end)</div>
+              <div class="session-top">
+                <span class="session-title">Séance 2</span>
+                <span class="session-date">${item.d2}</span>
+              </div>
               <div class="session-desc">${item.s2}</div>
             </div>
           </div>
