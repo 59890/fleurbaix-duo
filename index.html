@@ -5,47 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de Bord - Duo Trail de Fleurbaix (7 Mars 2027)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .toast-enter { transform: translateY(0); opacity: 1; transition: all 0.3s ease-out; }
-        .toast-exit { transform: translateY(-20px); opacity: 0; transition: all 0.3s ease-in; }
+        .pulse-subtle { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .checkbox-custom {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .checkbox-custom:active {
+            transform: scale(0.9);
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen p-3 sm:p-8">
 
-    <!-- Notification Toast Popup -->
-    <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none hidden px-4 py-2.5 rounded-xl shadow-2xl text-sm font-semibold flex items-center gap-2 border"></div>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none hidden px-4 py-2.5 rounded-2xl shadow-2xl text-xs sm:text-sm font-semibold flex items-center gap-2 border transition-all duration-300"></div>
 
     <div class="max-w-6xl mx-auto">
-        <header class="bg-gradient-to-br from-indigo-950 via-purple-900 to-rose-700 text-white p-5 sm:p-8 rounded-3xl shadow-xl mb-6">
-            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <!-- En-tête principal -->
+        <header class="bg-gradient-to-br from-indigo-950 via-purple-900 to-rose-700 text-white p-5 sm:p-8 rounded-3xl shadow-xl mb-6 relative overflow-hidden">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative z-10">
                 <div>
                     <div class="inline-flex items-center gap-2 bg-white/15 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-md border border-white/10">
                         <span>🎯 Objectif Commun : 7 Mars 2027</span>
                     </div>
                     <h1 class="text-2xl sm:text-4xl font-extrabold mt-2 tracking-tight">Trail de 16 km de Fleurbaix</h1>
                     <p class="text-indigo-100 text-xs sm:text-sm mt-1 max-w-xl">
-                        Programme Duo synchronisé • <b>Lui</b> : Reprise progressive & Anti-Périostite • <b>Elle</b> : Débutante (Base 5 km en 33 min)
+                        Programme Duo synchronisé en direct • <b>Lui</b> : Reprise douce anti-périostite • <b>Elle</b> : Débutante (Base 5 km en 33 min)
                     </p>
                 </div>
 
-                <!-- Sync Action Buttons -->
+                <!-- Boutons de synchronisation unique -->
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
-                    <button onclick="shareProgress()" class="bg-white text-indigo-950 hover:bg-indigo-50 font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all">
-                        <span>📲 Envoyer à ma femme / mon homme</span>
+                    <button onclick="shareDuoLinkWhatsApp()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-3 rounded-2xl text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all">
+                        <span>💬 Partager sur WhatsApp (1 seule fois)</span>
                     </button>
-                    <button onclick="shareViaWhatsApp()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all">
-                        <span>💬 WhatsApp</span>
+                    <button onclick="copyDuoLink()" class="bg-white text-indigo-950 hover:bg-indigo-50 font-bold px-4 py-3 rounded-2xl text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all">
+                        <span>🔗 Copier le lien Duo</span>
                     </button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6 pt-5 border-t border-white/15">
+            <!-- Barre d'état de synchronisation en temps réel -->
+            <div class="mt-5 p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-2">
+                    <span id="sync-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="sync-status" class="font-medium text-indigo-100">Synchronisation automatique active</span>
+                </div>
+                <div class="flex items-center gap-2 text-indigo-200">
+                    <span>Espace Duo :</span>
+                    <span id="duo-room-badge" class="bg-white/20 text-white font-mono px-2 py-0.5 rounded-md font-bold text-[11px]">Chargement...</span>
+                </div>
+            </div>
+
+            <!-- Statistiques et Barres de progression -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4 pt-4 border-t border-white/15">
                 <!-- Progression Lui -->
                 <div class="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 flex flex-col justify-between">
                     <div class="flex justify-between items-center text-xs">
-                        <span class="text-indigo-200 font-semibold uppercase tracking-wider text-[11px]">👤 Progression Lui</span>
+                        <span class="text-indigo-200 font-semibold uppercase tracking-wider text-[11px]">👤 Lui</span>
                         <span id="percent-lui" class="font-bold text-white text-xs">0%</span>
                     </div>
                     <div id="progress-text-lui" class="text-xl sm:text-2xl font-black text-white mt-1">0 / 46</div>
@@ -57,7 +80,7 @@
                 <!-- Progression Elle -->
                 <div class="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 flex flex-col justify-between">
                     <div class="flex justify-between items-center text-xs">
-                        <span class="text-rose-200 font-semibold uppercase tracking-wider text-[11px]">👩 Progression Elle</span>
+                        <span class="text-rose-200 font-semibold uppercase tracking-wider text-[11px]">👩 Elle</span>
                         <span id="percent-elle" class="font-bold text-white text-xs">0%</span>
                     </div>
                     <div id="progress-text-elle" class="text-xl sm:text-2xl font-black text-white mt-1">0 / 46</div>
@@ -66,7 +89,7 @@
                     </div>
                 </div>
 
-                <!-- Progression Duo Globale -->
+                <!-- Progression Globale Duo -->
                 <div class="col-span-2 sm:col-span-1 bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/15 flex flex-col justify-between">
                     <div class="flex justify-between items-center text-xs">
                         <span class="text-amber-200 font-semibold uppercase tracking-wider text-[11px]">🔥 Total Duo</span>
@@ -80,6 +103,7 @@
             </div>
         </header>
 
+        <!-- Filtres par phase -->
         <div class="flex gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none">
             <button onclick="filterPhase('all', this)" class="phase-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-purple-900 text-white shadow transition-all whitespace-nowrap">Toutes les phases (23 sem.)</button>
             <button onclick="filterPhase('1', this)" class="phase-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-slate-600 hover:bg-slate-100 shadow-sm transition-all whitespace-nowrap">Phase 1 : Adaptation</button>
@@ -89,18 +113,23 @@
             <button onclick="filterPhase('5', this)" class="phase-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-slate-600 hover:bg-slate-100 shadow-sm transition-all whitespace-nowrap">Phase 5 : Affûtage & Course</button>
         </div>
 
+        <!-- Liste des semaines d'entraînement -->
         <div id="weeks-container" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <!-- Dynamically populated by JS -->
+            <!-- Dynamically populated via JavaScript -->
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         const planData = [
             {
                 phase: 1, title: "Phase 1 : Adaptation et régularité (Octobre 2026)",
                 weeks: [
                     { 
-                        num: "S1", dates: "28 sept - 4 oct", note: "Reprise très douce sur chemins",
+                        num: "S1", dates: "28 sept - 4 oct", note: "Reprise très douce sur chemins souples",
                         lui: { s1: "25 min footing très lent (chemins)", s2: "35 min (4 min course / 1 min marche)" },
                         elle: { s1: "4 km en endurance douce", s2: "5 km continus (autour de 33-34 min)" }
                     },
@@ -238,49 +267,135 @@
             }
         ];
 
-        const STORAGE_KEY = 'fleurbaix_duo_progress_v2';
-
-        function loadData() {
-            try {
-                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-            } catch (e) {
-                return {};
-            }
-        }
-
-        let completedData = loadData();
-
-        function checkIncomingHashSync() {
-            if (window.location.hash) {
-                const hash = window.location.hash.substring(1);
-                let raw = '';
-                if (hash.startsWith('duo=')) {
-                    raw = hash.replace('duo=', '');
-                } else {
-                    raw = hash;
-                }
-
-                if (raw) {
-                    try {
-                        const decodedJson = decodeURIComponent(atob(raw));
-                        const parsed = JSON.parse(decodedJson);
-                        if (typeof parsed === 'object' && parsed !== null) {
-                            completedData = { ...completedData, ...parsed };
-                            localStorage.setItem(STORAGE_KEY, JSON.stringify(completedData));
-                            showToast("🎉 Progression synchronisée reçue avec succès !", "success");
-                            // Clean up hash in URL without refreshing
-                            if (window.history && window.history.replaceState) {
-                                window.history.replaceState(null, '', window.location.pathname + window.location.search);
-                            }
-                        }
-                    } catch (err) {
-                        console.warn("Could not decode hash data:", err);
-                    }
-                }
-            }
-        }
-
+        let completedData = {};
         let currentFilter = 'all';
+        let roomId = '';
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+        let docRef = null;
+
+        // Extraction ou génération automatique de l'identifiant Duo permanent
+        function resolveDuoRoomId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let id = urlParams.get('duo');
+
+            if (!id && window.location.hash) {
+                const hash = window.location.hash.substring(1);
+                if (hash.startsWith('duo=')) {
+                    id = hash.replace('duo=', '');
+                }
+            }
+
+            if (!id) {
+                // Création d'une clé duo unique pérenne
+                id = 'fleurbaix-' + Math.random().toString(36).substring(2, 8);
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?duo=' + id;
+                window.history.replaceState({ path: newUrl }, '', newUrl);
+            }
+
+            return id;
+        }
+
+        async function setupCloudSync() {
+            roomId = resolveDuoRoomId();
+            document.getElementById('duo-room-badge').innerText = roomId;
+
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'fleurbaix-duo-app';
+
+            if (typeof __firebase_config !== 'undefined') {
+                try {
+                    const firebaseConfig = JSON.parse(__firebase_config);
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+
+                    // Authentification requise avant toute requête Firestore (RULE 3)
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                    currentUser = auth.currentUser;
+
+                    // Collection publique partagée pour le duo (RULE 1)
+                    docRef = doc(db, 'artifacts', appId, 'public', 'data', 'duo_sessions', roomId);
+
+                    // Écoute temps réel des modifications (onSnapshot avec callback d'erreur obligatoire)
+                    onSnapshot(docRef, (docSnap) => {
+                        if (docSnap.exists()) {
+                            const cloudData = docSnap.data();
+                            if (cloudData && cloudData.completed) {
+                                completedData = cloudData.completed;
+                                renderCheckboxesState();
+                                updateProgressBars();
+                                setSyncStatus("🟢 Synchronisé en direct", "bg-emerald-400");
+                            }
+                        } else {
+                            // Initialisation du document partagé s'il n'existe pas encore
+                            saveToCloud();
+                        }
+                    }, (error) => {
+                        console.error("Firestore onSnapshot error:", error);
+                        setSyncStatus("🟡 Mode hors-ligne", "bg-amber-400");
+                    });
+
+                } catch (e) {
+                    console.error("Cloud initialization error:", e);
+                    fallbackLocalSync();
+                }
+            } else {
+                fallbackLocalSync();
+            }
+        }
+
+        function fallbackLocalSync() {
+            setSyncStatus("🟢 Sauvegardé en mémoire", "bg-emerald-400");
+            try {
+                const stored = localStorage.getItem('duo_local_' + roomId);
+                if (stored) {
+                    completedData = JSON.parse(stored);
+                    renderCheckboxesState();
+                    updateProgressBars();
+                }
+            } catch (err) {}
+        }
+
+        async function saveToCloud() {
+            setSyncStatus("🔄 Synchronisation...", "bg-amber-400");
+            
+            // Sauvegarde locale de sécurité
+            try {
+                localStorage.setItem('duo_local_' + roomId, JSON.stringify(completedData));
+            } catch(e) {}
+
+            if (db && currentUser && docRef) {
+                try {
+                    await setDoc(docRef, {
+                        completed: completedData,
+                        updatedAt: Date.now(),
+                        lastEditor: currentUser.uid
+                    }, { merge: true });
+                    setSyncStatus("🟢 Synchronisé en direct", "bg-emerald-400");
+                } catch (err) {
+                    console.error("Error pushing to cloud:", err);
+                    setSyncStatus("⚠️ Erreur de synchronisation", "bg-rose-500");
+                }
+            } else {
+                setTimeout(() => {
+                    setSyncStatus("🟢 Sauvegardé en mémoire", "bg-emerald-400");
+                }, 400);
+            }
+        }
+
+        function setSyncStatus(text, dotColorClass) {
+            const statusEl = document.getElementById('sync-status');
+            const dotEl = document.getElementById('sync-dot');
+            if (statusEl) statusEl.innerText = text;
+            if (dotEl) {
+                dotEl.className = `w-2.5 h-2.5 rounded-full ${dotColorClass} animate-pulse`;
+            }
+        }
 
         function renderPlan(filter = 'all') {
             currentFilter = filter;
@@ -322,11 +437,11 @@
                                     </div>
                                     <div class="space-y-2">
                                         <label class="flex items-start gap-2.5 cursor-pointer select-none">
-                                            <input type="checkbox" id="${luiS1Key}" data-key="${luiS1Key}" ${completedData[luiS1Key] ? 'checked' : ''} onchange="onCheckboxChange(this)" class="mt-0.5 w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer">
+                                            <input type="checkbox" id="${luiS1Key}" data-key="${luiS1Key}" ${completedData[luiS1Key] ? 'checked' : ''} class="duo-chk mt-0.5 w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer checkbox-custom">
                                             <span class="text-xs text-slate-700 leading-snug"><b>S1 :</b> ${week.lui.s1}</span>
                                         </label>
                                         <label class="flex items-start gap-2.5 cursor-pointer select-none">
-                                            <input type="checkbox" id="${luiS2Key}" data-key="${luiS2Key}" ${completedData[luiS2Key] ? 'checked' : ''} onchange="onCheckboxChange(this)" class="mt-0.5 w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer">
+                                            <input type="checkbox" id="${luiS2Key}" data-key="${luiS2Key}" ${completedData[luiS2Key] ? 'checked' : ''} class="duo-chk mt-0.5 w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer checkbox-custom">
                                             <span class="text-xs text-slate-700 leading-snug"><b>S2 :</b> ${week.lui.s2}</span>
                                         </label>
                                     </div>
@@ -342,11 +457,11 @@
                                     </div>
                                     <div class="space-y-2">
                                         <label class="flex items-start gap-2.5 cursor-pointer select-none">
-                                            <input type="checkbox" id="${elleS1Key}" data-key="${elleS1Key}" ${completedData[elleS1Key] ? 'checked' : ''} onchange="onCheckboxChange(this)" class="mt-0.5 w-4 h-4 rounded text-rose-600 border-slate-300 focus:ring-rose-500 cursor-pointer">
+                                            <input type="checkbox" id="${elleS1Key}" data-key="${elleS1Key}" ${completedData[elleS1Key] ? 'checked' : ''} class="duo-chk mt-0.5 w-4 h-4 rounded text-rose-600 border-slate-300 focus:ring-rose-500 cursor-pointer checkbox-custom">
                                             <span class="text-xs text-slate-700 leading-snug"><b>S1 :</b> ${week.elle.s1}</span>
                                         </label>
                                         <label class="flex items-start gap-2.5 cursor-pointer select-none">
-                                            <input type="checkbox" id="${elleS2Key}" data-key="${elleS2Key}" ${completedData[elleS2Key] ? 'checked' : ''} onchange="onCheckboxChange(this)" class="mt-0.5 w-4 h-4 rounded text-rose-600 border-slate-300 focus:ring-rose-500 cursor-pointer">
+                                            <input type="checkbox" id="${elleS2Key}" data-key="${elleS2Key}" ${completedData[elleS2Key] ? 'checked' : ''} class="duo-chk mt-0.5 w-4 h-4 rounded text-rose-600 border-slate-300 focus:ring-rose-500 cursor-pointer checkbox-custom">
                                             <span class="text-xs text-slate-700 leading-snug"><b>S2 :</b> ${week.elle.s2}</span>
                                         </label>
                                     </div>
@@ -362,7 +477,27 @@
                 });
             });
 
+            // Attacher les écouteurs de clic sur toutes les cases
+            document.querySelectorAll('.duo-chk').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const key = e.target.getAttribute('data-key');
+                    completedData[key] = e.target.checked;
+                    updateProgressBars();
+                    saveToCloud();
+                    showToast(e.target.checked ? "Séance cochée !" : "Séance décochée", "info", 1200);
+                });
+            });
+
             updateProgressBars();
+        }
+
+        function renderCheckboxesState() {
+            document.querySelectorAll('.duo-chk').forEach(chk => {
+                const key = chk.getAttribute('data-key');
+                if (key && completedData.hasOwnProperty(key)) {
+                    chk.checked = !!completedData[key];
+                }
+            });
         }
 
         function updateProgressBars() {
@@ -395,15 +530,7 @@
             document.getElementById('percent-total').innerText = `${percentTotal}%`;
         }
 
-        function onCheckboxChange(checkbox) {
-            const key = checkbox.getAttribute('data-key');
-            completedData[key] = checkbox.checked;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(completedData));
-            updateProgressBars();
-            showToast("Séance sauvegardée !", "info", 1500);
-        }
-
-        function filterPhase(phase, btn) {
+        window.filterPhase = function(phase, btn) {
             document.querySelectorAll('.phase-btn').forEach(b => {
                 b.classList.remove('bg-purple-900', 'text-white', 'shadow');
                 b.classList.add('bg-white', 'text-slate-600', 'shadow-sm');
@@ -413,12 +540,11 @@
                 btn.classList.add('bg-purple-900', 'text-white', 'shadow');
             }
             renderPlan(phase);
-        }
+        };
 
-        function generateShareUrl() {
-            const encoded = btoa(encodeURIComponent(JSON.stringify(completedData)));
+        function getDuoPermanentUrl() {
             const base = window.location.origin + window.location.pathname;
-            return `${base}#duo=${encoded}`;
+            return `${base}?duo=${roomId}`;
         }
 
         function copyToClipboard(text) {
@@ -438,40 +564,20 @@
             document.body.removeChild(textArea);
         }
 
-        async function shareProgress() {
-            const url = generateShareUrl();
-            const shareData = {
-                title: 'Trail de Fleurbaix 2027 - Progression Duo',
-                text: 'Voici notre plan d\'entraînement à jour avec nos séances cochées ! Ouvre le lien pour te synchroniser :',
-                url: url
-            };
-
-            if (navigator.share) {
-                try {
-                    await navigator.share(shareData);
-                    showToast("Lien partagé avec succès !", "success");
-                    return;
-                } catch (e) {
-                    if (e.name !== 'AbortError') {
-                        copyToClipboard(url);
-                        showToast("🔗 Lien copié ! Envoie-le par SMS ou message.", "success");
-                    }
-                    return;
-                }
-            }
-
+        window.copyDuoLink = function() {
+            const url = getDuoPermanentUrl();
             copyToClipboard(url);
-            showToast("🔗 Lien copié ! Envoie-le par SMS à ton partenaire.", "success");
-        }
+            showToast("🔗 Lien permanent copié ! Collez-le à votre partenaire (1 seule fois suffit).", "success", 4000);
+        };
 
-        function shareViaWhatsApp() {
-            const url = generateShareUrl();
-            const message = encodeURIComponent(`Coucou ! Voici notre progression pour le Trail de Fleurbaix avec nos séances cochées 🏃‍♂️🏃‍♀️ : \n${url}`);
+        window.shareDuoLinkWhatsApp = function() {
+            const url = getDuoPermanentUrl();
+            const message = encodeURIComponent(`Coucou ! Voici notre lien d'entraînement Duo pour le Trail de Fleurbaix 🏃‍♂️🏃‍♀️. \n\nOuvre-le et ajoute-le à ton écran d'accueil : toutes les séances cochées par l'un ou par l'autre se synchronisent automatiquement en direct !\n${url}`);
             window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
-        }
+        };
 
         let toastTimeout;
-        function showToast(message, type = "info", duration = 2800) {
+        function showToast(message, type = "info", duration = 3000) {
             const toast = document.getElementById('toast');
             clearTimeout(toastTimeout);
 
@@ -492,8 +598,8 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            checkIncomingHashSync();
             renderPlan('all');
+            setupCloudSync();
         });
     </script>
 </body>
